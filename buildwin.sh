@@ -1,4 +1,6 @@
 #!/bin/sh
+rm -r bin
+mkdir -p bin
 
 # Build the Windows executable
 echo "Building Windows executable..."
@@ -12,7 +14,7 @@ fi
 
 # Create a ZIP file with the executable and service scripts
 echo "Creating distribution ZIP file..."
-ZIP_NAME="cpuservice-$(date '+%Y%m%d').zip"
+ZIP_NAME="cpuservice.zip"
 
 # Check if zip command is available
 if ! command -v zip &> /dev/null; then

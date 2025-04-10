@@ -33,6 +33,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -71,6 +72,7 @@ var (
 	procGetCurrentProcess          = modkernel32.NewProc("GetCurrentProcess")
 	advapi32                       = windows.NewLazySystemDLL("advapi32.dll")
 	procStartServiceCtrlDispatcher = advapi32.NewProc("StartServiceCtrlDispatcherW")
+	isWindowsService               = true
 )
 
 func getSystemInfo() SYSTEM_INFO {
@@ -89,13 +91,6 @@ func getSystemTimes(idleTime, kernelTime, userTime *windows.Filetime) error {
 		return e1
 	}
 	return nil
-}
-
-func isWindowsService() (bool, error) {
-	// This is a simplified check
-	// Real implementation would use procStartServiceCtrlDispatcher.Call
-	// and check if it's a service or not
-	return false, nil
 }
 
 // CPUUsage struct to hold the CPU utilization
@@ -167,6 +162,15 @@ func cpuHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Check for the "-run" flag to run as a normal application instead of a service
+	runAsApp := flag.Bool("run", false, "Run as a normal application instead of a Windows service")
+	flag.Parse()
+
+	if *runAsApp {
+		isWindowsService = false
+		log.Println("Running as a normal application (not a Windows service)")
+	}
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// Initialize last CPU ticks
@@ -180,14 +184,7 @@ func main() {
 	log.Printf("Starting HTTP server on port %d", port)
 	server := &http.Server{Addr: ":" + strconv.Itoa(port)}
 
-	// Handle Windows service control events
-	isIntSvc, err := isWindowsService()
-	if err != nil {
-		log.Fatalf("Error checking if running as Windows service: %v", err)
-		return
-	}
-
-	if isIntSvc {
+	if isWindowsService {
 		runService(server)
 	} else {
 		// Run as a regular application for testing
