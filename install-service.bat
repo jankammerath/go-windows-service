@@ -4,7 +4,7 @@ echo Installing Go CPU Monitor Service...
 REM Get the directory of this batch file
 set SCRIPT_DIR=%~dp0
 set SERVICE_NAME=GoCPUMonitor
-set EXECUTABLE_PATH=%SCRIPT_DIR%bin\cpuservice.exe
+set EXECUTABLE_PATH=%SCRIPT_DIR%\cpuservice.exe
 
 echo Service executable path: %EXECUTABLE_PATH%
 
